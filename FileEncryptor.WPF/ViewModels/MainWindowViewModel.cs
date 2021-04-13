@@ -22,5 +22,14 @@ namespace FileEncryptor.WPF.ViewModels
         #endregion // Заголовок окна
 
         #endregion // Свойства
+
+        #region Конструктор
+
+        public MainWindowViewModel()
+        {
+            Title = "Шифратор";
+        }
+
+        #endregion // Конструктор
     }
 }
