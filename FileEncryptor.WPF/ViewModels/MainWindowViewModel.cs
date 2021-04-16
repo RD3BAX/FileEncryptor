@@ -112,9 +112,13 @@ namespace FileEncryptor.WPF.ViewModels
 
             var timer = Stopwatch.StartNew();
 
+            ((Command) DecryptCommand).Executable = false;
             ((Command) EncryptCommand).Executable = false;
+            ((Command) SelectFileCommand).Executable = false;
             await _Encryptor.EncryptAsync(file.FullName, destination_path, Password);
-            ((Command)EncryptCommand).Executable = true;
+            ((Command) EncryptCommand).Executable = true;
+            ((Command) DecryptCommand).Executable = true;
+            ((Command)SelectFileCommand).Executable = true;
 
             timer.Stop();
 
@@ -149,10 +153,14 @@ namespace FileEncryptor.WPF.ViewModels
             var timer = Stopwatch.StartNew();
 
             ((Command)DecryptCommand).Executable = false;
+            ((Command)EncryptCommand).Executable = false;
+            ((Command)SelectFileCommand).Executable = false;
             var decryption_task = _Encryptor.DecryptAsync(file.FullName, destination_path, Password);
             // тут можно расположить код который будет выполнятся параллельно процессу дешифрирования
             var success = await decryption_task;
+            ((Command)EncryptCommand).Executable = true;
             ((Command)DecryptCommand).Executable = true;
+            ((Command)SelectFileCommand).Executable = true;
 
             timer.Stop();
 
