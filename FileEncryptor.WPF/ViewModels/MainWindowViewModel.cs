@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Windows.Input;
 using FileEncryptor.WPF.Infrastructure.Commands;
@@ -114,8 +115,14 @@ namespace FileEncryptor.WPF.ViewModels
 
             ((Command) DecryptCommand).Executable = false;
             ((Command) EncryptCommand).Executable = false;
-            ((Command) SelectFileCommand).Executable = false;
-            await _Encryptor.EncryptAsync(file.FullName, destination_path, Password);
+            ((Command)SelectFileCommand).Executable = false;
+            try
+            {
+                await _Encryptor.EncryptAsync(file.FullName, destination_path, Password);
+            }
+            catch (OperationCanceledException)
+            {
+            }
             ((Command) EncryptCommand).Executable = true;
             ((Command) DecryptCommand).Executable = true;
             ((Command)SelectFileCommand).Executable = true;
@@ -157,7 +164,15 @@ namespace FileEncryptor.WPF.ViewModels
             ((Command)SelectFileCommand).Executable = false;
             var decryption_task = _Encryptor.DecryptAsync(file.FullName, destination_path, Password);
             // тут можно расположить код который будет выполнятся параллельно процессу дешифрирования
-            var success = await decryption_task;
+
+            var success = false;
+            try
+            {
+                success = await decryption_task;
+            }
+            catch (OperationCanceledException)
+            {
+            }
             ((Command)EncryptCommand).Executable = true;
             ((Command)DecryptCommand).Executable = true;
             ((Command)SelectFileCommand).Executable = true;
