@@ -48,7 +48,6 @@ namespace FileEncryptor.WPF.Services
             int readed;
             do
             {
-                Thread.Sleep(1); // Тестовое замедление
                 readed = source.Read(buffer, 0, BufferLength);
                 destination.Write(buffer, 0, readed);
             } 
@@ -112,6 +111,7 @@ namespace FileEncryptor.WPF.Services
 
                 var buffer = new byte[BufferLength];
                 int readed;
+                var last_percent = 0.0;
                 do
                 {
                     readed = await source.ReadAsync(buffer, 0, BufferLength, Cancel).ConfigureAwait(false);
@@ -119,9 +119,12 @@ namespace FileEncryptor.WPF.Services
                     await destination.WriteAsync(buffer, 0, readed, Cancel).ConfigureAwait(false);
 
                     var position = source.Position;
-                    Progress?.Report((double)position / file_length);
-
-                    Thread.Sleep(1); // Тестовое замедление
+                    var percent = (double)position / file_length;
+                    if (percent - last_percent >= 0.001)
+                    {
+                        Progress?.Report(percent);
+                        last_percent = percent;
+                    }
 
                     if (Cancel.IsCancellationRequested)
                     {
@@ -138,7 +141,8 @@ namespace FileEncryptor.WPF.Services
             }
             catch (OperationCanceledException)
             {
-                File.Delete(DestinationPath);
+                //File.Delete(DestinationPath);
+                Progress?.Report(0);
                 throw;
             }
             catch (Exception error)
@@ -176,6 +180,7 @@ namespace FileEncryptor.WPF.Services
 
                 var buffer = new byte[BufferLength];
                 int readed;
+                var last_percent = 0.0;
                 do
                 {
                     readed = await encrypted_source.ReadAsync(buffer, 0, BufferLength, Cancel).ConfigureAwait(false);
@@ -183,7 +188,12 @@ namespace FileEncryptor.WPF.Services
                     await destination.WriteAsync(buffer, 0, readed, Cancel).ConfigureAwait(false);
 
                     var position = encrypted_source.Position;
-                    Progress?.Report((double)position / file_length);
+                    var percent = (double)position / file_length;
+                    if (percent - last_percent >= 0.001)
+                    {
+                        Progress?.Report(percent);
+                        last_percent = percent;
+                    }
 
                     Cancel.ThrowIfCancellationRequested();
                 }
@@ -198,11 +208,12 @@ namespace FileEncryptor.WPF.Services
                     //return Task.FromResult(false);
                     return false;
                 }
-
+                Progress?.Report(1);
             }
             catch (OperationCanceledException)
             {
-                File.Delete(DestinationPath);
+                //File.Delete(DestinationPath);
+                Progress?.Report(0);
                 throw;
             }
 
